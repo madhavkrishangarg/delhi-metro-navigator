@@ -14,6 +14,7 @@ const App = () => {
   const [destination, setDestination] = useState('');
   const [route, setRoute] = useState([]);
   const [shapesToPlot, setShapesToPlot] = useState([]);
+  const [region, setRegion] = useState(null);
 
   useEffect(() => {
     Geolocation.getCurrentPosition(
@@ -57,7 +58,12 @@ const App = () => {
         end_coords: [destLat, destLon]
       });
       const routeData = response.data;
-      // console.log(routeData);
+
+      if (routeData.length === 0) {
+        Alert.alert('Error', 'No route found');
+        return;
+      }
+
       console.log("API call successful!")
   
       const shapesData = routeData.map(segment => {
@@ -80,14 +86,31 @@ const App = () => {
           [toStopCoords.stop_lat, toStopCoords.stop_lon],
           shapePoints
         );
-        // console.log(fromShapePtSeq, toShapePtSeq, shapeId);
         return shapePoints.filter(point =>
           point.shape_pt_sequence >= fromShapePtSeq &&
           point.shape_pt_sequence <= toShapePtSeq
         );
       }).flat();
-      // console.log(shapesData);
+
       setShapesToPlot(shapesData);
+
+      // Set map region to show the full plot
+      if (shapesData.length > 0) {
+        const latitudes = shapesData.map(point => point.shape_pt_lat);
+        const longitudes = shapesData.map(point => point.shape_pt_lon);
+
+        const minLat = Math.min(...latitudes);
+        const maxLat = Math.max(...latitudes);
+        const minLon = Math.min(...longitudes);
+        const maxLon = Math.max(...longitudes);
+
+        setRegion({
+          latitude: (minLat + maxLat) / 2,
+          longitude: (minLon + maxLon) / 2,
+          latitudeDelta: (maxLat - minLat) * 1.5,
+          longitudeDelta: (maxLon - minLon) * 1.5,
+        });
+      }
     } catch (error) {
       Alert.alert('Error', 'Unable to calculate route');
       console.error(error);
@@ -106,8 +129,6 @@ const App = () => {
 
   const groupedShapes = groupShapesByShapeId(shapesToPlot);
 
-  // console.log(groupedShapes);
-
   return (
     <View style={styles.container}>
       {currentLocation && (
@@ -119,19 +140,31 @@ const App = () => {
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
           }}
+          region={region}
         >
-          <Marker coordinate={currentLocation} title="Your Location" />
-          {Object.keys(groupedShapes).map(shapeId => (
-            <Polyline
-              key={shapeId}
-              coordinates={groupedShapes[shapeId].map(shape => ({
-                latitude: shape.shape_pt_lat,
-                longitude: shape.shape_pt_lon
-              }))}
-              strokeColor={route_color[shapeId] || '#000'} // default to black if no color is found
-              strokeWidth={5}
-            />
-          ))}
+          <Marker coordinate={currentLocation} title="Start" pinColor='#000' />
+          {Object.keys(groupedShapes).map(shapeId => {
+            const shapePoints = groupedShapes[shapeId];
+            const start = shapePoints[0];
+            const end = shapePoints[shapePoints.length - 1];
+            return (
+              <React.Fragment key={shapeId}>
+                <Polyline
+                  coordinates={shapePoints.map(shape => ({
+                    latitude: shape.shape_pt_lat,
+                    longitude: shape.shape_pt_lon
+                  }))}
+                  strokeColor={route_color[shapeId] || '#000'} // default to black if no color is found
+                  strokeWidth={5}
+                />
+                <Marker
+                  coordinate={{ latitude: end.shape_pt_lat, longitude: end.shape_pt_lon }}
+                  title="End"
+                  pinColor={route_color[shapeId]}
+                />
+              </React.Fragment>
+            );
+          })}
         </MapView>
       )}
       <TextInput
