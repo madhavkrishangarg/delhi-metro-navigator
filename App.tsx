@@ -7,6 +7,7 @@ import stops_df from './stops_df';
 import routes from './routes';
 import shapes from './shapes_df';
 import { getDistance } from 'geolib';
+import route_color from './route_color';
 
 const App = () => {
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -43,72 +44,6 @@ const App = () => {
     return nearestPoint;
   };
 
-  // const findRoute = async () => {
-  //   if (!currentLocation || !destination) {
-  //     Alert.alert('Error', 'Please provide both current location and destination');
-  //     return;
-  //   }
-
-  //   try {
-  //     const [destLat, destLon] = destination.split(',').map(coord => parseFloat(coord));
-  //     const response = await axios.post('http://192.168.1.40:5500/calculate_route', {
-  //       start_coords: [currentLocation.latitude, currentLocation.longitude],
-  //       end_coords: [destLat, destLon]
-  //     });
-  //     const routeData = response.data;
-  //     console.log(routeData);
-
-  //     const shapeIds = routeData.map(segment => {
-  //       const routeObj = routes.find(route => route.route_id === String(segment.route_id));
-  //       return routeObj ? routeObj.shape_id : null;
-  //     }).filter(shapeId => shapeId !== null);
-
-  //     const shapesData = shapeIds.map(shapeId => {
-  //       const shapePoints = shapes.filter(shape => shape.shape_id === shapeId);
-  //       const fromStop = routeData.find(segment => segment.route_id === shapeId).from_stop;
-  //       const toStop = routeData.find(segment => segment.route_id === shapeId).to_stop;
-
-  //       const fromStopCoords = stops.find(stop => stop.stop_id === fromStop);
-  //       const toStopCoords = stops.find(stop => stop.stop_id === toStop);
-
-  //       const fromShapePtSeq = findNearestShapePoint(
-  //         [fromStopCoords.stop_lat, fromStopCoords.stop_lon],
-  //         shapePoints
-  //       );
-  //       const toShapePtSeq = findNearestShapePoint(
-  //         [toStopCoords.stop_lat, toStopCoords.stop_lon],
-  //         shapePoints
-  //       );
-
-  //       return shapePoints.filter(point =>
-  //         point.shape_pt_sequence >= fromShapePtSeq &&
-  //         point.shape_pt_sequence <= toShapePtSeq
-  //       );
-  //     }).flat();
-
-  //     setShapesToPlot(shapesData);
-
-  //     // setRoute(routeData);
-
-
-  //     // const shapeIds = routeData.map(segment => {
-  //     //   const routeObj = routes.find(route => route.route_id === String(segment.route_id));
-  //     //   return routeObj ? routeObj.shape_id : null;
-  //     // }).filter(shapeId => shapeId !== null);
-
-
-  //     // const shapesData = shapeIds.map(shapeId => {
-  //     //   return shapes.filter(shape => shape.shape_id === shapeId);
-  //     // }).flat();
-
-
-  //     // setShapesToPlot(shapesData);
-  //   } catch (error) {
-  //     Alert.alert('Error', 'Unable to calculate route');
-  //     console.error(error);
-  //   }
-  // };
-
   const findRoute = async () => {
     if (!currentLocation || !destination) {
       Alert.alert('Error', 'Please provide both current location and destination');
@@ -122,7 +57,8 @@ const App = () => {
         end_coords: [destLat, destLon]
       });
       const routeData = response.data;
-      console.log(routeData);
+      // console.log(routeData);
+      console.log("API call successful!")
   
       const shapesData = routeData.map(segment => {
         const routeObj = routes.find(route => route.route_id === String(segment.route_id));
@@ -144,20 +80,33 @@ const App = () => {
           [toStopCoords.stop_lat, toStopCoords.stop_lon],
           shapePoints
         );
-        console.log(fromShapePtSeq, toShapePtSeq, shapeId);
+        // console.log(fromShapePtSeq, toShapePtSeq, shapeId);
         return shapePoints.filter(point =>
           point.shape_pt_sequence >= fromShapePtSeq &&
           point.shape_pt_sequence <= toShapePtSeq
         );
       }).flat();
-      console.log(shapesData);
+      // console.log(shapesData);
       setShapesToPlot(shapesData);
     } catch (error) {
       Alert.alert('Error', 'Unable to calculate route');
       console.error(error);
     }
   };
-  
+
+  const groupShapesByShapeId = (shapes) => {
+    return shapes.reduce((acc, shape) => {
+      if (!acc[shape.shape_id]) {
+        acc[shape.shape_id] = [];
+      }
+      acc[shape.shape_id].push(shape);
+      return acc;
+    }, {});
+  };
+
+  const groupedShapes = groupShapesByShapeId(shapesToPlot);
+
+  // console.log(groupedShapes);
 
   return (
     <View style={styles.container}>
@@ -172,16 +121,17 @@ const App = () => {
           }}
         >
           <Marker coordinate={currentLocation} title="Your Location" />
-          {shapesToPlot.length > 0 && (
+          {Object.keys(groupedShapes).map(shapeId => (
             <Polyline
-              coordinates={shapesToPlot.map(shape => ({
+              key={shapeId}
+              coordinates={groupedShapes[shapeId].map(shape => ({
                 latitude: shape.shape_pt_lat,
                 longitude: shape.shape_pt_lon
               }))}
-              strokeColor="#000"
+              strokeColor={route_color[shapeId] || '#000'} // default to black if no color is found
               strokeWidth={5}
             />
-          )}
+          ))}
         </MapView>
       )}
       <TextInput
