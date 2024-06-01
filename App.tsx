@@ -53,7 +53,7 @@ const App = () => {
   
     try {
       const [destLat, destLon] = destination.split(',').map(coord => parseFloat(coord));
-      const response = await axios.post('http://192.168.1.40:5500/calculate_route', {
+      const response = await axios.post('http://192.168.1.40:5500/calculate_route_distance', {
         start_coords: [currentLocation.latitude, currentLocation.longitude],
         end_coords: [destLat, destLon]
       });
