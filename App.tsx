@@ -11,6 +11,7 @@ import route_color from './route_color';
 
 const App = () => {
   const [currentLocation, setCurrentLocation] = useState(null);
+  const [nearestStop, setNearestStop] = useState(null);
   const [destination, setDestination] = useState('');
   const [route, setRoute] = useState([]);
   const [shapesToPlot, setShapesToPlot] = useState([]);
@@ -21,6 +22,8 @@ const App = () => {
       position => {
         const { latitude, longitude } = position.coords;
         setCurrentLocation({ latitude, longitude });
+        const nearest = findNearestStop([latitude, longitude]);
+        setNearestStop(nearest);
       },
       error => { Alert.alert('Error', 'Unable to get current location'), console.error(error) },
       { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
@@ -44,6 +47,24 @@ const App = () => {
 
     return nearestPoint;
   };
+
+  const findNearestStop = (coords) => {
+    let minDistance = Infinity;
+    let nearestStop = null;
+
+    stops_df.forEach(stop => {
+      const distance = getDistance(
+        { latitude: coords[0], longitude: coords[1] },
+        { latitude: stop.stop_lat, longitude: stop.stop_lon }
+      );
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestStop = stop;
+      }
+    });
+
+    return nearestStop;
+  }
 
   const findRoute = async () => {
     if (!currentLocation || !destination) {
@@ -142,11 +163,14 @@ const App = () => {
           }}
           region={region}
         >
-          <Marker coordinate={currentLocation} title="Start" pinColor='#000' />
+          {nearestStop && (
+            <Marker coordinate={{ latitude: nearestStop.stop_lat, longitude: nearestStop.stop_lon }} title={nearestStop.stop_name} pinColor='#000' />
+          )}
           {Object.keys(groupedShapes).map(shapeId => {
             const shapePoints = groupedShapes[shapeId];
             const start = shapePoints[0];
             const end = shapePoints[shapePoints.length - 1];
+            const nearestStopEnd = findNearestStop([end.shape_pt_lat, end.shape_pt_lon]);
             return (
               <React.Fragment key={shapeId}>
                 <Polyline
@@ -159,7 +183,7 @@ const App = () => {
                 />
                 <Marker
                   coordinate={{ latitude: end.shape_pt_lat, longitude: end.shape_pt_lon }}
-                  title="End"
+                  title={nearestStopEnd.stop_name}
                   pinColor={route_color[shapeId]}
                 />
               </React.Fragment>
