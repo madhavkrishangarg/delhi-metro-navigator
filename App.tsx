@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Button, TextInput, StyleSheet, Alert, Text, ActivityIndicator } from 'react-native';
+import { View, Button, StyleSheet, Alert, Text, ActivityIndicator } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import axios from 'axios';
@@ -232,24 +232,33 @@ const App = () => {
           })}
         </MapView>
       )}
-      <GooglePlacesAutocomplete
-        placeholder='Enter Destination'
-        onPress={(data, details = null) => {
-          const { lat, lng } = details.geometry.location;
-          setDestination(`${lat},${lng}`);
-        }}
-        query={{
-          key: 'AIzaSyD3GEeam3dsxAwWfZxmDsQTkTvkcSpZ6eg',
-          language: 'en',
-          currentLocation: true,
-          currentLocationLabel: 'Current location',
-          radius: 1000000,
-        }}
-        fetchDetails={true}
-        styles={{
-          textInput: [styles.input, {width: '80%'}],
-        }}
-      />
+      {currentLocation && (
+        <GooglePlacesAutocomplete
+          placeholder='Enter Destination'
+          onPress={(data, details = null) => {
+            const { lat, lng } = details.geometry.location;
+            setDestination(`${lat},${lng}`);
+          }}
+          query={{
+            key: 'AIzaSyD3GEeam3dsxAwWfZxmDsQTkTvkcSpZ6eg',
+            language: 'en',
+            location: `${currentLocation.latitude},${currentLocation.longitude}`,
+            radius: 10000, // Adjust the radius as needed
+          }}
+          fetchDetails={true}
+          styles={{
+            textInput: [styles.input, { width: '80%', alignSelf: 'center' }],
+            container: {
+              flex: 0,
+              width: '80%',
+              alignSelf: 'center',
+            },
+            listView: {
+              backgroundColor: 'white',
+            },
+          }}
+        />
+      )}
       <Button title="Find Route" onPress={findRoute} />
       <View style={styles.instructionsContainer}>
         {instructions.map((instruction, index) => (
@@ -276,7 +285,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     margin: 10,
     padding: 10,
-    width: '80%',
   },
   instructionsContainer: {
     marginTop: 10,
