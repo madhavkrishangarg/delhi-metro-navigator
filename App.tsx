@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Button, TextInput, StyleSheet, Alert, Text } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Button, TextInput, StyleSheet, Alert, Text, ActivityIndicator } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import axios from 'axios';
@@ -8,6 +8,8 @@ import routes from './routes';
 import shapes from './shapes_df';
 import { getDistance } from 'geolib';
 import route_color from './route_color';
+import debounce from 'lodash.debounce';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 const App = () => {
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -40,7 +42,7 @@ const App = () => {
         const { latitude, longitude } = position.coords;
         setCurrentLocation({ latitude, longitude });
         const nearest = findNearestStop([latitude, longitude]);
-        updateRoute();
+        debouncedUpdateRoute();
         setNearestStop(nearest);
       },
       error => {
@@ -156,8 +158,10 @@ const App = () => {
     } catch (error) {
       Alert.alert('Error', 'Unable to update route');
       console.error(error);
-    }
+    } 
   };
+
+  const debouncedUpdateRoute = useCallback(debounce(updateRoute, 1000), [currentLocation, destination]);
 
   const findRoute = async () => {
     if (!currentLocation || !destination) {
@@ -168,7 +172,6 @@ const App = () => {
   };
 
   const getTurnByTurnInstructions = (route) => {
-    // Simplified example of generating instructions from route data
     return route.map((segment, index) => {
       const nextSegment = route[index + 1];
       if (!nextSegment) return `Arrive at destination ${segment.stop_name}`;
@@ -216,7 +219,7 @@ const App = () => {
                     latitude: shape.shape_pt_lat,
                     longitude: shape.shape_pt_lon
                   }))}
-                  strokeColor={route_color[shapeId] || '#000'} // default to black if no color is found
+                  strokeColor={route_color[shapeId] || '#000'}
                   strokeWidth={5}
                 />
                 <Marker
@@ -229,11 +232,23 @@ const App = () => {
           })}
         </MapView>
       )}
-      <TextInput
-        style={styles.input}
-        placeholder="Enter destination (lat,lon)"
-        onChangeText={setDestination}
-        value={destination}
+      <GooglePlacesAutocomplete
+        placeholder='Enter Destination'
+        onPress={(data, details = null) => {
+          const { lat, lng } = details.geometry.location;
+          setDestination(`${lat},${lng}`);
+        }}
+        query={{
+          key: 'AIzaSyD3GEeam3dsxAwWfZxmDsQTkTvkcSpZ6eg',
+          language: 'en',
+          currentLocation: true,
+          currentLocationLabel: 'Current location',
+          radius: 1000000,
+        }}
+        fetchDetails={true}
+        styles={{
+          textInput: [styles.input, {width: '80%'}],
+        }}
       />
       <Button title="Find Route" onPress={findRoute} />
       <View style={styles.instructionsContainer}>
