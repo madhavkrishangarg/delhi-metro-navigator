@@ -39,7 +39,9 @@ const App = () => {
       position => {
         const { latitude, longitude } = position.coords;
         setCurrentLocation({ latitude, longitude });
+        const nearest = findNearestStop([latitude, longitude]);
         updateRoute();
+        setNearestStop(nearest);
       },
       error => {
         console.error(error);
