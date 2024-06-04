@@ -91,6 +91,8 @@ const App = () => {
     return nearestStop;
   };
 
+  // navigator.geolocation = require('@react-native-community/geolocation');
+
   const updateRoute = async () => {
     if (!currentLocation || !destination) return;
 
@@ -247,9 +249,13 @@ const App = () => {
             location: `${currentLocation.latitude},${currentLocation.longitude}`,
             radius: 10000,
           }}
-          currentLocation={true}
-          currentLocationLabel='Current Location'
-          fetchDetails={true}
+          // currentLocation={true}
+          // currentLocationLabel='Current Location'
+          // fetchDetails={true}
+          predefinedPlaces={stops_df.map(stop => ({
+            description: stop.stop_name,
+            geometry: { location: { lat: stop.stop_lat, lng: stop.stop_lon } }
+          }))}
           styles={{
             textInput: [styles.input, { width: '80%', alignSelf: 'center' }],
             container: {
@@ -276,7 +282,11 @@ const App = () => {
             location: `${currentLocation.latitude},${currentLocation.longitude}`,
             radius: 10000,
           }}
-          fetchDetails={true}
+          // fetchDetails={true}
+          predefinedPlaces={stops_df.map(stop => ({
+            description: stop.stop_name,
+            geometry: { location: { lat: stop.stop_lat, lng: stop.stop_lon } }
+          }))}
           styles={{
             textInput: [styles.input, { width: '80%', alignSelf: 'center' }],
             container: {
