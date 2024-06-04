@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Button, StyleSheet, Alert, Text } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import MapView, { Marker, Polyline } from 'react-native-maps';
@@ -102,7 +102,6 @@ const App = () => {
       });
 
       const routeData = response.data;
-      //if routeData is undefined or empty, show an alert
       if (!routeData || routeData.length === 0 || !Array.isArray(routeData)) {
         Alert.alert('Error', 'No route found');
         return;
@@ -160,7 +159,7 @@ const App = () => {
     } catch (error) {
       Alert.alert('Error', 'Unable to update route');
       console.error(error);
-    } 
+    }
   };
 
   const debouncedUpdateRoute = useCallback(debounce(updateRoute, 1000), [currentLocation, destination]);
@@ -170,7 +169,7 @@ const App = () => {
       Alert.alert('Error', 'Please provide both current location and destination');
       return;
     }
-    updateRoute();
+    await updateRoute();
   };
 
   const getTurnByTurnInstructions = (route) => {
@@ -191,7 +190,7 @@ const App = () => {
     }, {});
   };
 
-  const groupedShapes = groupShapesByShapeId(shapesToPlot);
+  const groupedShapes = useMemo(() => groupShapesByShapeId(shapesToPlot), [shapesToPlot]);
 
   return (
     <View style={styles.container}>
@@ -275,7 +274,7 @@ const App = () => {
             key: 'AIzaSyD3GEeam3dsxAwWfZxmDsQTkTvkcSpZ6eg',
             language: 'en',
             location: `${currentLocation.latitude},${currentLocation.longitude}`,
-            radius: 10000, // Adjust the radius as needed
+            radius: 10000,
           }}
           fetchDetails={true}
           styles={{
