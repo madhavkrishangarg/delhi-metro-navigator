@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Button, StyleSheet, Alert, Text, ActivityIndicator } from 'react-native';
+import { View, Button, StyleSheet, Alert, Text } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import axios from 'axios';
@@ -13,6 +13,7 @@ import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplet
 
 const App = () => {
   const [currentLocation, setCurrentLocation] = useState(null);
+  const [startLocation, setStartLocation] = useState('');
   const [nearestStop, setNearestStop] = useState(null);
   const [destination, setDestination] = useState('');
   const [route, setRoute] = useState([]);
@@ -101,7 +102,8 @@ const App = () => {
       });
 
       const routeData = response.data;
-      if (routeData.length === 0) {
+      //if routeData is undefined or empty, show an alert
+      if (!routeData || routeData.length === 0 || !Array.isArray(routeData)) {
         Alert.alert('Error', 'No route found');
         return;
       }
@@ -234,6 +236,36 @@ const App = () => {
       )}
       {currentLocation && (
         <GooglePlacesAutocomplete
+          placeholder='Enter Starting Location'
+          onPress={(data, details = null) => {
+            const { lat, lng } = details.geometry.location;
+            setStartLocation(`${lat},${lng}`);
+            setCurrentLocation({ latitude: lat, longitude: lng });
+          }}
+          query={{
+            key: 'AIzaSyD3GEeam3dsxAwWfZxmDsQTkTvkcSpZ6eg',
+            language: 'en',
+            location: `${currentLocation.latitude},${currentLocation.longitude}`,
+            radius: 10000,
+          }}
+          currentLocation={true}
+          currentLocationLabel='Current Location'
+          fetchDetails={true}
+          styles={{
+            textInput: [styles.input, { width: '80%', alignSelf: 'center' }],
+            container: {
+              flex: 0,
+              width: '80%',
+              alignSelf: 'center',
+            },
+            listView: {
+              backgroundColor: 'white',
+            },
+          }}
+        />
+      )}
+      {currentLocation && (
+        <GooglePlacesAutocomplete
           placeholder='Enter Destination'
           onPress={(data, details = null) => {
             const { lat, lng } = details.geometry.location;
@@ -277,7 +309,7 @@ const styles = StyleSheet.create({
   },
   map: {
     width: '100%',
-    height: '70%',
+    height: '50%',
   },
   input: {
     height: 40,
