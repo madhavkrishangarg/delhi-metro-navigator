@@ -10,6 +10,7 @@ import { getDistance } from 'geolib';
 import route_color from './route_color';
 import debounce from 'lodash.debounce';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 // Custom component for current location marker
 const CurrentLocationMarker = () => (
@@ -218,6 +219,17 @@ const App = () => {
 
   const groupedShapes = useMemo(() => groupShapesByShapeId(shapesToPlot), [shapesToPlot]);
 
+  const centerMapOnCurrentLocation = () => {
+    if (currentLocation) {
+      setRegion({
+        latitude: currentLocation.latitude,
+        longitude: currentLocation.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      });
+    }
+  };
+
   return (
     <View style={styles.container}>
       {currentLocation && (
@@ -327,14 +339,15 @@ const App = () => {
         />)}
       </View>
 
-      <View style={styles.bottomBanner}>
+
+      {currentLocation && (
         <TouchableOpacity
-          style={styles.startNavigationButton}
-          onPress={startNavigation}
+          style={styles.locationButton}
+          onPress={centerMapOnCurrentLocation}
         >
-          <Text style={styles.startNavigationButtonText}>Start</Text>
+          <Icon name="location-arrow" size={30} color="#007bff" />
         </TouchableOpacity>
-      </View>
+      )}
 
       {instructions.length > 0 && (
         <View style={styles.instructionsContainer}>
@@ -344,7 +357,18 @@ const App = () => {
           ))}
         </View>
       )}
+
+      <View style={styles.bottomBanner}>
+        <TouchableOpacity
+          style={styles.startNavigationButton}
+          onPress={startNavigation}
+        >
+          <Text style={styles.startNavigationButtonText}>Start</Text>
+        </TouchableOpacity>
+      </View>
+
     </View>
+
   );
 };
 
@@ -377,7 +401,7 @@ const styles = StyleSheet.create({
   currentLocationInnerCircle: {
     width: 16,
     height: 16,
-    borderRadius:18,
+    borderRadius: 18,
     backgroundColor: 'blue',
   },
   banner: {
@@ -437,7 +461,7 @@ const styles = StyleSheet.create({
     height: 35,
     color: '#495057',
     fontSize: 16,
-    paddingHorizontal: 10,
+    // paddingHorizontal: 10,
   },
   startNavigationButton: {
     backgroundColor: '#007bff',
@@ -447,7 +471,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     position: 'absolute',
     bottom: 15,
-    left: width/15,
+    left: width / 15,
   },
   startNavigationButtonText: {
     color: '#ffffff',
@@ -455,6 +479,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   instructionsContainer: {
+    position: 'relative',
+    bottom: 10,
     backgroundColor: '#ffffff',
     borderRadius: 5,
     borderColor: '#ced4da',
@@ -471,6 +497,20 @@ const styles = StyleSheet.create({
   instructionText: {
     fontSize: 14,
     marginBottom: 5,
+  },
+  locationButton: {
+    position: 'absolute',
+    bottom: 180,
+    right: 15,
+    height: 60,
+    width: 60,
+    backgroundColor: '#ffffff',
+    borderRadius: 50,
+    padding: 0,
+    elevation: 5,
+    zIndex: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
   },
 });
 
