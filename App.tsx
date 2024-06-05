@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Button, StyleSheet, Alert, Text } from 'react-native';
+import { View, Button, StyleSheet, Alert, Text, TouchableOpacity } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import axios from 'axios';
@@ -30,7 +30,6 @@ const App = () => {
   const [instructions, setInstructions] = useState([]);
   const [navigationStarted, setNavigationStarted] = useState(false);
   const [startingStop, setStartingStop] = useState(null);
-
 
   useEffect(() => {
     Geolocation.getCurrentPosition(
@@ -118,7 +117,6 @@ const App = () => {
       }
 
       const startingStopData = stops_df.find(stop => stop.stop_id === routeData[0].from_stop);
-      // console.log('Starting stop:', startingStopData);
       setStartingStop(startingStopData);
 
       const shapesData = routeData.map(segment => {
@@ -261,82 +259,81 @@ const App = () => {
                     longitude: shape.shape_pt_lon
                   }))}
                   strokeColor={route_color[shapeId] || '#000'}
-                  strokeWidth={5}
+                  strokeWidth={6}
                 />
                 <Marker
-                  coordinate={{ latitude: end.shape_pt_lat, longitude: end.shape_pt_lon }}
+                  coordinate={{
+                    latitude: end.shape_pt_lat,
+                    longitude: end.shape_pt_lon,
+                  }}
                   title={nearestStopEnd.stop_name}
-                  pinColor={route_color[shapeId]}
+                  pinColor={route_color[shapeId] || '#000'}
                 />
               </React.Fragment>
             );
           })}
         </MapView>
       )}
-      {currentLocation && (
-        <GooglePlacesAutocomplete
-          placeholder='Enter Starting Point'
-          onPress={(data, details = null) => {
-            const { lat, lng } = details.geometry.location;
-            setStartingPoint(`${lat},${lng}`);
-          }}
-          query={{
-            key: 'AIzaSyD3GEeam3dsxAwWfZxmDsQTkTvkcSpZ6eg',
-            language: 'en',
-            location: `${currentLocation.latitude},${currentLocation.longitude}`,
-            radius: 10000,
-          }}
-          fetchDetails={true}
-          predefinedPlaces={[{
-            description: 'Current Location',
-            geometry: { location: { lat: currentLocation.latitude, lng: currentLocation.longitude } }
-          }]}
-          styles={{
-            textInput: [styles.input, { width: '80%', alignSelf: 'center' }],
-            container: {
-              flex: 0,
-              width: '80%',
-              alignSelf: 'center',
-            },
-            listView: {
-              backgroundColor: 'white',
-            },
-          }}
-        />
+
+      {currentLocation && (<GooglePlacesAutocomplete
+        placeholder="Enter Starting Point"
+        onPress={(data, details = null) => {
+          const { lat, lng } = details.geometry.location;
+          setStartingPoint(`${lat},${lng}`);
+        }}
+        query={{
+          key: 'AIzaSyD3GEeam3dsxAwWfZxmDsQTkTvkcSpZ6eg',
+          language: 'en',
+          location: `${currentLocation.latitude},${currentLocation.longitude}`,
+          radius: 10000,
+        }}
+        fetchDetails={true}
+        predefinedPlaces={[{
+          description: 'Current Location',
+          geometry: { location: { lat: currentLocation.latitude, lng: currentLocation.longitude } }
+        }]}
+        styles={{
+          container: styles.placesAutocompleteContainer,
+          textInputContainer: styles.placesAutocompleteTextInputContainer,
+          textInput: styles.placesAutocompleteTextInput,
+        }}
+      />)}
+
+      {currentLocation && (<GooglePlacesAutocomplete
+        placeholder='Enter Destination'
+        onPress={(data, details = null) => {
+          const { lat, lng } = details.geometry.location;
+          setDestination(`${lat},${lng}`);
+        }}
+        query={{
+          key: 'AIzaSyD3GEeam3dsxAwWfZxmDsQTkTvkcSpZ6eg',
+          language: 'en',
+          location: `${currentLocation.latitude},${currentLocation.longitude}`,
+          radius: 10000,
+        }}
+        fetchDetails={true}
+        styles={{
+          container: styles.placesAutocompleteContainer,
+          textInputContainer: styles.placesAutocompleteTextInputContainer,
+          textInput: styles.placesAutocompleteTextInput,
+        }}
+      />)}
+
+      <TouchableOpacity
+        style={styles.startNavigationButton}
+        onPress={startNavigation}
+      >
+        <Text style={styles.startNavigationButtonText}>Start Navigation</Text>
+      </TouchableOpacity>
+
+      {instructions.length > 0 && (
+        <View style={styles.instructionsContainer}>
+          <Text style={styles.instructionsHeader}>Turn-by-Turn Instructions:</Text>
+          {instructions.map((instruction, index) => (
+            <Text key={index} style={styles.instructionText}>{instruction}</Text>
+          ))}
+        </View>
       )}
-      {currentLocation && (
-        <GooglePlacesAutocomplete
-          placeholder='Enter Destination'
-          onPress={(data, details = null) => {
-            const { lat, lng } = details.geometry.location;
-            setDestination(`${lat},${lng}`);
-          }}
-          query={{
-            key: 'AIzaSyD3GEeam3dsxAwWfZxmDsQTkTvkcSpZ6eg',
-            language: 'en',
-            location: `${currentLocation.latitude},${currentLocation.longitude}`,
-            radius: 10000,
-          }}
-          fetchDetails={true}
-          styles={{
-            textInput: [styles.input, { width: '80%', alignSelf: 'center' }],
-            container: {
-              flex: 0,
-              width: '80%',
-              alignSelf: 'center',
-            },
-            listView: {
-              backgroundColor: 'white',
-            },
-          }}
-        />
-      )}
-      <Button title="Start" onPress={startNavigation} />
-      <View style={styles.instructionsContainer}>
-        {instructions.map((instruction, index) => (
-          <Text key={index} style={styles.instruction}>{instruction}</Text>
-        ))}
-      </View>
     </View>
   );
 };
@@ -344,29 +341,16 @@ const App = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
+    backgroundColor: '#f8f9fa',
   },
   map: {
-    width: '100%',
-    height: '50%',
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    margin: 10,
-    padding: 10,
-  },
-  instructionsContainer: {
-    marginTop: 10,
-    width: '80%',
-  },
-  instruction: {
-    fontSize: 16,
-    marginBottom: 5,
+    ...StyleSheet.absoluteFillObject,
   },
   currentLocationMarker: {
+    width: 30,
+    height: 30,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -383,6 +367,53 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     backgroundColor: 'blue',
+  },
+  placesAutocompleteContainer: {
+    width: '100%',
+    paddingHorizontal: 10,
+    marginVertical: 5,
+  },
+  placesAutocompleteTextInputContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 5,
+    borderColor: '#ced4da',
+    borderWidth: 1,
+    marginBottom: 5,
+  },
+  placesAutocompleteTextInput: {
+    height: 40,
+    color: '#495057',
+    fontSize: 16,
+    paddingHorizontal: 10,
+  },
+  startNavigationButton: {
+    backgroundColor: '#007bff',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  startNavigationButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+  },
+  instructionsContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 5,
+    borderColor: '#ced4da',
+    borderWidth: 1,
+    padding: 10,
+    marginTop: 10,
+    width: '100%',
+  },
+  instructionsHeader: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  instructionText: {
+    fontSize: 14,
+    marginBottom: 5,
   },
 });
 
