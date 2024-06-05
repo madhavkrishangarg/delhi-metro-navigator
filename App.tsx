@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Button, StyleSheet, Alert, Text, TouchableOpacity } from 'react-native';
+import { View, Button, StyleSheet, Alert, Text, TouchableOpacity, Dimensions } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import axios from 'axios';
@@ -275,49 +275,51 @@ const App = () => {
         </MapView>
       )}
 
-      {currentLocation && (<GooglePlacesAutocomplete
-        placeholder="Enter Starting Point"
-        onPress={(data, details = null) => {
-          const { lat, lng } = details.geometry.location;
-          setStartingPoint(`${lat},${lng}`);
-        }}
-        query={{
-          key: 'AIzaSyD3GEeam3dsxAwWfZxmDsQTkTvkcSpZ6eg',
-          language: 'en',
-          location: `${currentLocation.latitude},${currentLocation.longitude}`,
-          radius: 10000,
-        }}
-        fetchDetails={true}
-        predefinedPlaces={[{
-          description: 'Current Location',
-          geometry: { location: { lat: currentLocation.latitude, lng: currentLocation.longitude } }
-        }]}
-        styles={{
-          container: styles.placesAutocompleteContainer,
-          textInputContainer: styles.placesAutocompleteTextInputContainer,
-          textInput: styles.placesAutocompleteTextInput,
-        }}
-      />)}
+      <View style={styles.banner}>
+        {currentLocation && (<GooglePlacesAutocomplete
+          placeholder="Enter Starting Point"
+          onPress={(data, details = null) => {
+            const { lat, lng } = details.geometry.location;
+            setStartingPoint(`${lat},${lng}`);
+          }}
+          query={{
+            key: 'AIzaSyD3GEeam3dsxAwWfZxmDsQTkTvkcSpZ6eg',
+            language: 'en',
+            location: `${currentLocation.latitude},${currentLocation.longitude}`,
+            radius: 10000,
+          }}
+          fetchDetails={true}
+          predefinedPlaces={[{
+            description: 'Current Location',
+            geometry: { location: { lat: currentLocation.latitude, lng: currentLocation.longitude } }
+          }]}
+          styles={{
+            container: styles.placesAutocompleteContainer,
+            textInputContainer: styles.placesAutocompleteTextInputContainer,
+            textInput: styles.placesAutocompleteTextInput,
+          }}
+        />)}
 
-      {currentLocation && (<GooglePlacesAutocomplete
-        placeholder='Enter Destination'
-        onPress={(data, details = null) => {
-          const { lat, lng } = details.geometry.location;
-          setDestination(`${lat},${lng}`);
-        }}
-        query={{
-          key: 'AIzaSyD3GEeam3dsxAwWfZxmDsQTkTvkcSpZ6eg',
-          language: 'en',
-          location: `${currentLocation.latitude},${currentLocation.longitude}`,
-          radius: 10000,
-        }}
-        fetchDetails={true}
-        styles={{
-          container: styles.placesAutocompleteContainer,
-          textInputContainer: styles.placesAutocompleteTextInputContainer,
-          textInput: styles.placesAutocompleteTextInput,
-        }}
-      />)}
+        {currentLocation && (<GooglePlacesAutocomplete
+          placeholder='Enter Destination'
+          onPress={(data, details = null) => {
+            const { lat, lng } = details.geometry.location;
+            setDestination(`${lat},${lng}`);
+          }}
+          query={{
+            key: 'AIzaSyD3GEeam3dsxAwWfZxmDsQTkTvkcSpZ6eg',
+            language: 'en',
+            location: `${currentLocation.latitude},${currentLocation.longitude}`,
+            radius: 10000,
+          }}
+          fetchDetails={true}
+          styles={{
+            container: styles.placeAutocompleteContainerDestination,
+            textInputContainer: styles.placesAutocompleteTextInputContainer,
+            textInput: styles.placesAutocompleteTextInput,
+          }}
+        />)}
+      </View>
 
       <TouchableOpacity
         style={styles.startNavigationButton}
@@ -338,6 +340,8 @@ const App = () => {
   );
 };
 
+const { width } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -355,23 +359,46 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   currentLocationOuterCircle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 24,
+    height: 24,
+    borderRadius: 24,
     backgroundColor: 'rgba(0, 122, 255, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   currentLocationInnerCircle: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 16,
+    height: 16,
+    borderRadius:18,
     backgroundColor: 'blue',
   },
+  banner: {
+    position: 'absolute',
+    top: -5,
+    width: width * 1,
+    height: 150,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 16,
+    padding: 10,
+    alignItems: 'center',
+    zIndex: 1,
+    overflow: 'visible',
+  },
   placesAutocompleteContainer: {
-    width: '100%',
-    paddingHorizontal: 10,
+    width: width * 0.8,
+    // paddingHorizontal: 10,
     marginVertical: 5,
+    zIndex: 3,
+    position: 'absolute',
+    top: 20,
+  },
+  placeAutocompleteContainerDestination: {
+    width: width * 0.8,
+    // paddingHorizontal: 10,
+    marginVertical: 5,
+    zIndex: 2,
+    position: 'absolute',
+    top: 80,
   },
   placesAutocompleteTextInputContainer: {
     backgroundColor: '#ffffff',
@@ -379,9 +406,10 @@ const styles = StyleSheet.create({
     borderColor: '#ced4da',
     borderWidth: 1,
     marginBottom: 5,
+    width: '100%',
   },
   placesAutocompleteTextInput: {
-    height: 40,
+    height: 35,
     color: '#495057',
     fontSize: 16,
     paddingHorizontal: 10,
