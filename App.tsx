@@ -13,13 +13,14 @@ import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplet
 
 const App = () => {
   const [currentLocation, setCurrentLocation] = useState(null);
-  const [startLocation, setStartLocation] = useState('');
+  const [startingPoint, setStartingPoint] = useState('');
   const [nearestStop, setNearestStop] = useState(null);
   const [destination, setDestination] = useState('');
   const [route, setRoute] = useState([]);
   const [shapesToPlot, setShapesToPlot] = useState([]);
   const [region, setRegion] = useState(null);
   const [instructions, setInstructions] = useState([]);
+  const [navigationStarted, setNavigationStarted] = useState(false);
 
   useEffect(() => {
     Geolocation.getCurrentPosition(
@@ -43,7 +44,9 @@ const App = () => {
         const { latitude, longitude } = position.coords;
         setCurrentLocation({ latitude, longitude });
         const nearest = findNearestStop([latitude, longitude]);
-        debouncedUpdateRoute();
+        if (navigationStarted) {
+          debouncedUpdateRoute();
+        }
         setNearestStop(nearest);
       },
       error => {
@@ -53,7 +56,7 @@ const App = () => {
     );
 
     return () => Geolocation.clearWatch(watchId);
-  }, [currentLocation, destination]);
+  }, [currentLocation, destination, navigationStarted]);
 
   const findNearestShapePoint = (stopCoords, shapePoints) => {
     let minDistance = Infinity;
@@ -91,15 +94,14 @@ const App = () => {
     return nearestStop;
   };
 
-  // navigator.geolocation = require('@react-native-community/geolocation');
-
   const updateRoute = async () => {
-    if (!currentLocation || !destination) return;
+    if (!startingPoint || !destination) return;
 
     try {
+      const [startLat, startLon] = startingPoint.split(',').map(coord => parseFloat(coord));
       const [destLat, destLon] = destination.split(',').map(coord => parseFloat(coord));
       const response = await axios.post('http://192.168.1.40:5500/calculate_route_distance', {
-        start_coords: [currentLocation.latitude, currentLocation.longitude],
+        start_coords: [startLat, startLon],
         end_coords: [destLat, destLon]
       });
 
@@ -164,13 +166,27 @@ const App = () => {
     }
   };
 
-  const debouncedUpdateRoute = useCallback(debounce(updateRoute, 1000), [currentLocation, destination]);
+  const debouncedUpdateRoute = useCallback(debounce(updateRoute, 1000), [startingPoint, destination]);
 
-  const findRoute = async () => {
+  useEffect(() => {
+    if (startingPoint && destination) {
+      updateRoute();
+    }
+  }, [startingPoint, destination]);
+
+  const startNavigation = async () => {
     if (!currentLocation || !destination) {
       Alert.alert('Error', 'Please provide both current location and destination');
       return;
     }
+
+    const [startLat, startLon] = startingPoint.split(',').map(coord => parseFloat(coord));
+    if (currentLocation.latitude !== startLat || currentLocation.longitude !== startLon) {
+      Alert.alert('Error', 'Current location does not match the starting point');
+      return;
+    }
+
+    setNavigationStarted(true);
     await updateRoute();
   };
 
@@ -237,11 +253,10 @@ const App = () => {
       )}
       {currentLocation && (
         <GooglePlacesAutocomplete
-          placeholder='Enter Starting Location'
+          placeholder='Enter Starting Point'
           onPress={(data, details = null) => {
             const { lat, lng } = details.geometry.location;
-            setStartLocation(`${lat},${lng}`);
-            setCurrentLocation({ latitude: lat, longitude: lng });
+            setStartingPoint(`${lat},${lng}`);
           }}
           query={{
             key: 'AIzaSyD3GEeam3dsxAwWfZxmDsQTkTvkcSpZ6eg',
@@ -298,7 +313,7 @@ const App = () => {
           }}
         />
       )}
-      <Button title="Find Route" onPress={findRoute} />
+      <Button title="Start" onPress={startNavigation} />
       <View style={styles.instructionsContainer}>
         {instructions.map((instruction, index) => (
           <Text key={index} style={styles.instruction}>{instruction}</Text>
