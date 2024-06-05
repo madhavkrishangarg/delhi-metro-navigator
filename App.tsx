@@ -327,12 +327,14 @@ const App = () => {
         />)}
       </View>
 
-      <TouchableOpacity
-        style={styles.startNavigationButton}
-        onPress={startNavigation}
-      >
-        <Text style={styles.startNavigationButtonText}>Start Navigation</Text>
-      </TouchableOpacity>
+      <View style={styles.bottomBanner}>
+        <TouchableOpacity
+          style={styles.startNavigationButton}
+          onPress={startNavigation}
+        >
+          <Text style={styles.startNavigationButtonText}>Start</Text>
+        </TouchableOpacity>
+      </View>
 
       {instructions.length > 0 && (
         <View style={styles.instructionsContainer}>
@@ -390,6 +392,18 @@ const styles = StyleSheet.create({
     zIndex: 1,
     overflow: 'visible',
   },
+  bottomBanner: {
+    position: 'absolute',
+    bottom: -5,
+    left: 0,
+    width: width,
+    height: 70,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 0,
+    padding: 0,
+    alignItems: 'center',
+    zIndex: 1,
+  },
   placesAutocompleteContainer: {
     width: width * 0.8,
     // paddingHorizontal: 10,
@@ -412,9 +426,9 @@ const styles = StyleSheet.create({
   },
   placesAutocompleteTextInputContainer: {
     backgroundColor: '#ffffff',
-    borderRadius: 5,
+    borderRadius: 8,
     borderColor: '#ced4da',
-    borderWidth: 1,
+    borderWidth: 2,
     marginBottom: 5,
     width: '100%',
     alignItems: 'center',
@@ -431,10 +445,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 40,
     marginTop: 10,
-    position: 'relative',
-    bottom: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+    position: 'absolute',
+    bottom: 15,
+    left: width/15,
   },
   startNavigationButtonText: {
     color: '#ffffff',
