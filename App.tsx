@@ -288,6 +288,9 @@ const App = () => {
             location: `${currentLocation.latitude},${currentLocation.longitude}`,
             radius: 10000,
           }}
+          debounce={100}
+          // keyboardShouldPersistTaps='never'
+          listViewDisplayed='auto'
           fetchDetails={true}
           predefinedPlaces={[{
             description: 'Current Location',
@@ -312,6 +315,9 @@ const App = () => {
             location: `${currentLocation.latitude},${currentLocation.longitude}`,
             radius: 10000,
           }}
+          debounce={100}
+          // keyboardShouldPersistTaps='never'
+          listViewDisplayed='auto'
           fetchDetails={true}
           styles={{
             container: styles.placeAutocompleteContainerDestination,
@@ -391,6 +397,8 @@ const styles = StyleSheet.create({
     zIndex: 3,
     position: 'absolute',
     top: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   placeAutocompleteContainerDestination: {
     width: width * 0.8,
@@ -399,6 +407,8 @@ const styles = StyleSheet.create({
     zIndex: 2,
     position: 'absolute',
     top: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   placesAutocompleteTextInputContainer: {
     backgroundColor: '#ffffff',
@@ -407,6 +417,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 5,
     width: '100%',
+    alignItems: 'center',
   },
   placesAutocompleteTextInput: {
     height: 35,
@@ -418,12 +429,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#007bff',
     paddingVertical: 12,
     paddingHorizontal: 20,
-    borderRadius: 5,
+    borderRadius: 40,
     marginTop: 10,
+    position: 'relative',
+    bottom: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   startNavigationButtonText: {
     color: '#ffffff',
     fontSize: 16,
+    fontWeight: 'bold',
   },
   instructionsContainer: {
     backgroundColor: '#ffffff',
