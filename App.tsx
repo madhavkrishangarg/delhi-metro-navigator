@@ -11,24 +11,32 @@ import route_color from './route_color';
 import debounce from 'lodash.debounce';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
+// Custom component for current location marker
+const CurrentLocationMarker = () => (
+  <View style={styles.currentLocationMarker}>
+    <View style={styles.currentLocationOuterCircle}>
+      <View style={styles.currentLocationInnerCircle} />
+    </View>
+  </View>
+);
+
 const App = () => {
   const [currentLocation, setCurrentLocation] = useState(null);
   const [startingPoint, setStartingPoint] = useState('');
-  const [nearestStop, setNearestStop] = useState(null);
   const [destination, setDestination] = useState('');
   const [route, setRoute] = useState([]);
   const [shapesToPlot, setShapesToPlot] = useState([]);
   const [region, setRegion] = useState(null);
   const [instructions, setInstructions] = useState([]);
   const [navigationStarted, setNavigationStarted] = useState(false);
+  const [startingStop, setStartingStop] = useState(null);
+
 
   useEffect(() => {
     Geolocation.getCurrentPosition(
       position => {
         const { latitude, longitude } = position.coords;
         setCurrentLocation({ latitude, longitude });
-        const nearest = findNearestStop([latitude, longitude]);
-        setNearestStop(nearest);
       },
       error => {
         Alert.alert('Error', 'Unable to get current location');
@@ -43,11 +51,9 @@ const App = () => {
       position => {
         const { latitude, longitude } = position.coords;
         setCurrentLocation({ latitude, longitude });
-        const nearest = findNearestStop([latitude, longitude]);
         if (navigationStarted) {
           debouncedUpdateRoute();
         }
-        setNearestStop(nearest);
       },
       error => {
         console.error(error);
@@ -111,6 +117,10 @@ const App = () => {
         return;
       }
 
+      const startingStopData = stops_df.find(stop => stop.stop_id === routeData[0].from_stop);
+      // console.log('Starting stop:', startingStopData);
+      setStartingStop(startingStopData);
+
       const shapesData = routeData.map(segment => {
         const routeObj = routes.find(route => route.route_id === String(segment.route_id));
         if (!routeObj) return [];
@@ -152,8 +162,8 @@ const App = () => {
         setRegion({
           latitude: (minLat + maxLat) / 2,
           longitude: (minLon + maxLon) / 2,
-          latitudeDelta: (maxLat - minLat) * 1.5,
-          longitudeDelta: (maxLon - minLon) * 1.5,
+          latitudeDelta: (maxLat - minLat) * 1.25,
+          longitudeDelta: (maxLon - minLon) * 1.25,
         });
       }
 
@@ -223,9 +233,21 @@ const App = () => {
           }}
           region={region}
         >
-          {nearestStop && (
-            <Marker coordinate={{ latitude: nearestStop.stop_lat, longitude: nearestStop.stop_lon }} title={nearestStop.stop_name} pinColor='#000' />
+          {route.length > 0 && shapesToPlot.length > 0 && (
+            <Marker
+              coordinate={{
+                latitude: shapesToPlot[0].shape_pt_lat,
+                longitude: shapesToPlot[0].shape_pt_lon,
+              }}
+              title={startingStop.stop_name}
+              pinColor="red"
+            />
           )}
+
+          <Marker coordinate={currentLocation}>
+            <CurrentLocationMarker />
+          </Marker>
+
           {Object.keys(groupedShapes).map(shapeId => {
             const shapePoints = groupedShapes[shapeId];
             const start = shapePoints[0];
@@ -296,10 +318,6 @@ const App = () => {
             radius: 10000,
           }}
           fetchDetails={true}
-          // predefinedPlaces={stops_df.map(stop => ({
-          //   description: stop.stop_name,
-          //   geometry: { location: { lat: stop.stop_lat, lng: stop.stop_lon } }
-          // }))}
           styles={{
             textInput: [styles.input, { width: '80%', alignSelf: 'center' }],
             container: {
@@ -347,6 +365,24 @@ const styles = StyleSheet.create({
   instruction: {
     fontSize: 16,
     marginBottom: 5,
+  },
+  currentLocationMarker: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  currentLocationOuterCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(0, 122, 255, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  currentLocationInnerCircle: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: 'blue',
   },
 });
 
