@@ -249,13 +249,11 @@ const App = () => {
             location: `${currentLocation.latitude},${currentLocation.longitude}`,
             radius: 10000,
           }}
-          // currentLocation={true}
-          // currentLocationLabel='Current Location'
-          // fetchDetails={true}
-          predefinedPlaces={stops_df.map(stop => ({
-            description: stop.stop_name,
-            geometry: { location: { lat: stop.stop_lat, lng: stop.stop_lon } }
-          }))}
+          fetchDetails={true}
+          predefinedPlaces={[{
+            description: 'Current Location',
+            geometry: { location: { lat: currentLocation.latitude, lng: currentLocation.longitude } }
+          }]}
           styles={{
             textInput: [styles.input, { width: '80%', alignSelf: 'center' }],
             container: {
@@ -282,11 +280,11 @@ const App = () => {
             location: `${currentLocation.latitude},${currentLocation.longitude}`,
             radius: 10000,
           }}
-          // fetchDetails={true}
-          predefinedPlaces={stops_df.map(stop => ({
-            description: stop.stop_name,
-            geometry: { location: { lat: stop.stop_lat, lng: stop.stop_lon } }
-          }))}
+          fetchDetails={true}
+          // predefinedPlaces={stops_df.map(stop => ({
+          //   description: stop.stop_name,
+          //   geometry: { location: { lat: stop.stop_lat, lng: stop.stop_lon } }
+          // }))}
           styles={{
             textInput: [styles.input, { width: '80%', alignSelf: 'center' }],
             container: {
