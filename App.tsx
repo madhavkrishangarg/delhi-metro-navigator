@@ -339,32 +339,33 @@ const App = () => {
         />)}
       </View>
 
+      <View style={styles.bottomContainer}>
+        {currentLocation && (
+          <TouchableOpacity
+            style={styles.locationButton}
+            onPress={centerMapOnCurrentLocation}
+          >
+            <Icon name="location-arrow" size={30} color="#007bff" />
+          </TouchableOpacity>
+        )}
 
-      {currentLocation && (
-        <TouchableOpacity
-          style={styles.locationButton}
-          onPress={centerMapOnCurrentLocation}
-        >
-          <Icon name="location-arrow" size={30} color="#007bff" />
-        </TouchableOpacity>
-      )}
+        {instructions.length > 0 && (
+          <View style={styles.instructionsContainer}>
+            <Text style={styles.instructionsHeader}>Turn-by-Turn Instructions:</Text>
+            {instructions.map((instruction, index) => (
+              <Text key={index} style={styles.instructionText}>{instruction}</Text>
+            ))}
+          </View>
+        )}
 
-      {instructions.length > 0 && (
-        <View style={styles.instructionsContainer}>
-          <Text style={styles.instructionsHeader}>Turn-by-Turn Instructions:</Text>
-          {instructions.map((instruction, index) => (
-            <Text key={index} style={styles.instructionText}>{instruction}</Text>
-          ))}
+        <View style={styles.bottomBanner}>
+          <TouchableOpacity
+            style={styles.startNavigationButton}
+            onPress={startNavigation}
+          >
+            <Text style={styles.startNavigationButtonText}>Start</Text>
+          </TouchableOpacity>
         </View>
-      )}
-
-      <View style={styles.bottomBanner}>
-        <TouchableOpacity
-          style={styles.startNavigationButton}
-          onPress={startNavigation}
-        >
-          <Text style={styles.startNavigationButtonText}>Start</Text>
-        </TouchableOpacity>
       </View>
 
     </View>
@@ -417,8 +418,8 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
   bottomBanner: {
-    position: 'absolute',
-    bottom: -5,
+    // position: 'absolute',
+    bottom: -15,
     left: 0,
     width: width,
     height: 70,
@@ -426,7 +427,7 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     padding: 0,
     alignItems: 'center',
-    zIndex: 1,
+    // zIndex: 1,
   },
   placesAutocompleteContainer: {
     width: width * 0.8,
@@ -472,6 +473,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 15,
     left: width / 15,
+    zIndex: 1,
   },
   startNavigationButtonText: {
     color: '#ffffff',
@@ -479,15 +481,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   instructionsContainer: {
-    position: 'relative',
-    bottom: 10,
+    // position: 'relative',
+    // bottom: 5,
     backgroundColor: '#ffffff',
     borderRadius: 5,
     borderColor: '#ced4da',
     borderWidth: 1,
     padding: 10,
-    marginTop: 10,
+    marginVertical: 5,
     width: '100%',
+    zIndex: 1,
   },
   instructionsHeader: {
     fontSize: 16,
@@ -499,9 +502,9 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   locationButton: {
-    position: 'absolute',
-    bottom: 180,
-    right: 15,
+    // position: 'absolute',
+    bottom: 10,
+    left: width/2.6,
     height: 60,
     width: 60,
     backgroundColor: '#ffffff',
@@ -511,6 +514,17 @@ const styles = StyleSheet.create({
     zIndex: 1,
     alignItems: 'center',
     justifyContent: 'center'
+  },
+  bottomContainer: {
+    // position: 'absolute',
+    bottom: 0,
+    width: width,
+    // height: 100,
+    backgroundColor: 'rgba(255, 255, 255, 0)',
+    borderRadius: 16,
+    padding: 10,
+    alignItems: 'center',
+    zIndex: 1,
   },
 });
 
