@@ -11,6 +11,10 @@ import route_color from './route_color';
 import debounce from 'lodash.debounce';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+
+const Stack = createStackNavigator();
 
 // Custom component for current location marker
 const CurrentLocationMarker = () => (
@@ -21,7 +25,7 @@ const CurrentLocationMarker = () => (
   </View>
 );
 
-const App = () => {
+const HomeScreen = ({ navigation }) => {
   const [currentLocation, setCurrentLocation] = useState(null);
   const [startingPoint, setStartingPoint] = useState('');
   const [destination, setDestination] = useState('');
@@ -188,14 +192,13 @@ const App = () => {
       Alert.alert('Error', 'Please provide both current location and destination');
       return;
     }
-
     const [startLat, startLon] = startingPoint.split(',').map(coord => parseFloat(coord));
     if (currentLocation.latitude !== startLat || currentLocation.longitude !== startLon) {
       Alert.alert('Error', 'Current location does not match the starting point');
       return;
     }
-
     setNavigationStarted(true);
+    navigation.navigate('Directions');
     await updateRoute();
   };
 
@@ -373,7 +376,30 @@ const App = () => {
   );
 };
 
+const NavigationScreen = () => {
+  return (
+    <View>
+      <Text>Navigation Screen</Text>
+    </View>
+  );
+}
+
+const App = () => {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Metro Navigation">
+        <Stack.Screen name="Metro Navigation" component={HomeScreen} />
+        <Stack.Screen name="Directions" component={NavigationScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+};
+
+
+
 const { width } = Dimensions.get('window');
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -504,7 +530,7 @@ const styles = StyleSheet.create({
   locationButton: {
     // position: 'absolute',
     bottom: 10,
-    left: width/2.6,
+    left: width / 2.6,
     height: 60,
     width: 60,
     backgroundColor: '#ffffff',
