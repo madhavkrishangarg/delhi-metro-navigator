@@ -46,7 +46,7 @@ const HomeScreen = ({ navigation }) => {
         Alert.alert('Error', 'Unable to get current location');
         console.error(error);
       },
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+      { enableHighAccuracy: false, timeout: 20000, maximumAge: 1000 }
     );
   }, []);
 
@@ -61,7 +61,7 @@ const HomeScreen = ({ navigation }) => {
       error => {
         console.error(error);
       },
-      { enableHighAccuracy: true, distanceFilter: 10 }
+      { enableHighAccuracy: false, distanceFilter: 10 }
     );
   
     return () => Geolocation.clearWatch(watchId);
@@ -242,7 +242,7 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  const debouncedSetRegion = debounce(setRegion, 300);
+  const debouncedSetRegion = debounce(setRegion, 1000);
 
   return (
     <View style={styles.container}>
@@ -256,7 +256,7 @@ const HomeScreen = ({ navigation }) => {
             longitudeDelta: 0.0421,
           }}
           region={region}
-          onRegionChange={debouncedSetRegion}
+          // onRegionChange={debouncedSetRegion}
         >
           {route.length > 0 && shapesToPlot.length > 0 && (
             <Marker
@@ -408,7 +408,7 @@ const NavigationScreen = ({ navigation, route }) => {
         Alert.alert('Error', 'Unable to get current location');
         console.error(error);
       },
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+      { enableHighAccuracy: false, timeout: 20000, maximumAge: 1000 }
     );
 
     const watchId = Geolocation.watchPosition(
@@ -419,7 +419,7 @@ const NavigationScreen = ({ navigation, route }) => {
       error => {
         console.error(error);
       },
-      { enableHighAccuracy: true, distanceFilter: 10, interval: 10000 }
+      { enableHighAccuracy: false, distanceFilter: 10, interval: 10000 }
     );
 
     return () => {
@@ -594,7 +594,7 @@ const NavigationScreen = ({ navigation, route }) => {
 
   const groupedShapes = useMemo(() => groupShapesByShapeId(shapesToPlot), [shapesToPlot]);
 
-  const debouncedSetRegion = debounce(setRegion, 300);
+  const debouncedSetRegion = debounce(setRegion, 1000);
 
   // console.log(shapesToPlot);
   return (
@@ -609,7 +609,7 @@ const NavigationScreen = ({ navigation, route }) => {
             longitudeDelta: 0.0421,
           }}
           region={region}
-          onRegionChange={debouncedSetRegion}
+          // onRegionChange={debouncedSetRegion}
         >
           {route.length > 0 && shapesToPlot.length > 0 && (
             <Marker
