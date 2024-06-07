@@ -202,11 +202,21 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const getTurnByTurnInstructions = (route) => {
-    return route.map((segment, index) => {
-      const nextSegment = route[index + 1];
-      if (!nextSegment) return `Arrive at destination ${segment.stop_name}`;
-      return `Go to ${nextSegment.stop_name}`;
+    // console.log(route);
+
+    const instructions = route.map((segment, index) => {
+      const stop_name = stops_df.find(stop => stop.stop_id === segment.from_stop).stop_name;
+      return `From ${stop_name} take ${segment.route_name.split('_')[0]} line towards ${segment.route_name.split(' to ')[1]}`;
     });
+
+    // Add the arrival instruction for the last stop
+    const lastStopSegment = route[route.length - 1];
+    const lastStopName = stops_df.find(stop => stop.stop_id === lastStopSegment.to_stop).stop_name;
+    instructions.push(`Arrive at stop ${lastStopName}`);
+
+    // console.log(instructions);
+    return instructions;
+
   };
 
   const groupShapesByShapeId = (shapes) => {
@@ -548,11 +558,23 @@ const NavigationScreen = ({ navigation, route }) => {
   };
 
   const getTurnByTurnInstructions = (route) => {
-    return route.map((segment, index) => {
-      const nextSegment = route[index + 1];
-      if (!nextSegment) return `Arrive at destination ${segment.stop_name}`;
-      return `Go to ${nextSegment.stop_name}`;
+    // console.log(route);
+
+    // console.log(route);
+
+    const instructions = route.map((segment, index) => {
+      const stop_name = stops_df.find(stop => stop.stop_id === segment.from_stop).stop_name;
+      return `From ${stop_name} take ${segment.route_name.split('_')[0]} line towards ${segment.route_name.split(' to ')[1]}`;
     });
+
+    // Add the arrival instruction for the last stop
+    const lastStopSegment = route[route.length - 1];
+    const lastStopName = stops_df.find(stop => stop.stop_id === lastStopSegment.to_stop).stop_name;
+    instructions.push(`Arrive at stop ${lastStopName}`);
+
+    // console.log(instructions);
+    return instructions;
+
   };
 
   const centerMapOnCurrentLocation = () => {
