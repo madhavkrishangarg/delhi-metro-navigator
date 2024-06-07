@@ -61,7 +61,7 @@ const HomeScreen = ({ navigation }) => {
       error => {
         console.error(error);
       },
-      { enableHighAccuracy: false, distanceFilter: 10 }
+      { enableHighAccuracy: false, distanceFilter: 50 }
     );
 
     return () => Geolocation.clearWatch(watchId);
@@ -435,7 +435,7 @@ const NavigationScreen = ({ navigation, route }) => {
       error => {
         console.error(error);
       },
-      { enableHighAccuracy: false, distanceFilter: 10, interval: 10000 }
+      { enableHighAccuracy: false, distanceFilter: 50, interval: 15000 }
     );
 
     return () => {
