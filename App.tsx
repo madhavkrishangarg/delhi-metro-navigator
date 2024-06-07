@@ -55,7 +55,7 @@ const HomeScreen = ({ navigation }) => {
       const { latitude, longitude } = position.coords;
       setCurrentLocation({ latitude, longitude });
     }, 500);
-  
+
     const watchId = Geolocation.watchPosition(
       debouncedSetCurrentLocation,
       error => {
@@ -63,7 +63,7 @@ const HomeScreen = ({ navigation }) => {
       },
       { enableHighAccuracy: false, distanceFilter: 10 }
     );
-  
+
     return () => Geolocation.clearWatch(watchId);
   }, []);
 
@@ -192,7 +192,11 @@ const HomeScreen = ({ navigation }) => {
       return;
     }
     const [startLat, startLon] = startingPoint.split(',').map(coord => parseFloat(coord));
-    if (currentLocation.latitude !== startLat || currentLocation.longitude !== startLon) {
+    //current location should be within 150 meters of startingPoint
+    if (getDistance(
+      { latitude: currentLocation.latitude, longitude: currentLocation.longitude },
+      { latitude: startLat, longitude: startLon }
+    ) > 150) {
       Alert.alert('Error', 'Current location does not match the starting point');
       return;
     }
@@ -256,7 +260,7 @@ const HomeScreen = ({ navigation }) => {
             longitudeDelta: 0.0421,
           }}
           region={region}
-          // onRegionChange={debouncedSetRegion}
+          // onRegionChangeComplete={debouncedSetRegion}
         >
           {route.length > 0 && shapesToPlot.length > 0 && (
             <Marker
@@ -305,6 +309,10 @@ const HomeScreen = ({ navigation }) => {
       <View style={styles.banner}>
         {currentLocation && (<GooglePlacesAutocomplete
           placeholder="Enter Starting Point"
+          textInputProps={{
+            placeholderTextColor: 'black',
+            returnKeyType: "search"
+          }}
           onPress={(data, details = null) => {
             const { lat, lng } = details.geometry.location;
             setStartingPoint(`${lat},${lng}`);
@@ -323,15 +331,21 @@ const HomeScreen = ({ navigation }) => {
             description: 'Current Location',
             geometry: { location: { lat: currentLocation.latitude, lng: currentLocation.longitude } }
           }]}
+          predefinedPlacesAlwaysVisible= {true}
           styles={{
             container: styles.placesAutocompleteContainer,
             textInputContainer: styles.placesAutocompleteTextInputContainer,
             textInput: styles.placesAutocompleteTextInput,
+            description: {color : 'black'},
           }}
         />)}
 
         {currentLocation && (<GooglePlacesAutocomplete
           placeholder='Enter Destination'
+          textInputProps={{
+            placeholderTextColor: 'black',
+            returnKeyType: "search"
+          }}
           onPress={(data, details = null) => {
             const { lat, lng } = details.geometry.location;
             setDestination(`${lat},${lng}`);
@@ -350,11 +364,13 @@ const HomeScreen = ({ navigation }) => {
             container: styles.placeAutocompleteContainerDestination,
             textInputContainer: styles.placesAutocompleteTextInputContainer,
             textInput: styles.placesAutocompleteTextInput,
+            description: {color : 'black'},
           }}
         />)}
       </View>
 
-      <View style={styles.bottomContainer}>
+      {/* <View style={styles.bottomContainer}> */}
+      <View>
         {currentLocation && (
           <TouchableOpacity
             style={styles.locationButton}
@@ -609,7 +625,7 @@ const NavigationScreen = ({ navigation, route }) => {
             longitudeDelta: 0.0421,
           }}
           region={region}
-          // onRegionChange={debouncedSetRegion}
+          onRegionChangeComplete={setRegion}
         >
           {route.length > 0 && shapesToPlot.length > 0 && (
             <Marker
@@ -655,7 +671,8 @@ const NavigationScreen = ({ navigation, route }) => {
         </MapView>
       )}
 
-      <View style={styles.bottomContainer}>
+      {/* <View style={styles.bottomContainer}> */}
+      <View>
         <TouchableOpacity
           style={styles.locationButton}
           onPress={centerMapOnCurrentLocation}
@@ -737,7 +754,7 @@ const styles = StyleSheet.create({
   },
   bottomBanner: {
     // position: 'absolute',
-    bottom: -15,
+    bottom: -5,
     left: 0,
     width: width,
     height: 70,
@@ -756,6 +773,7 @@ const styles = StyleSheet.create({
     top: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    // flexDirection: 'row'
   },
   placeAutocompleteContainerDestination: {
     width: width * 0.8,
@@ -772,15 +790,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderColor: '#ced4da',
     borderWidth: 2,
-    marginBottom: 5,
+    // marginBottom: 5,
     width: '100%',
-    alignItems: 'center',
+    // alignItems: 'center',
+    // verticalAlign: 'middle'
   },
   placesAutocompleteTextInput: {
     height: 35,
-    color: '#495057',
+    color: 'black',
     fontSize: 16,
     // paddingHorizontal: 10,
+    // marginBottom: 15
   },
   startNavigationButton: {
     backgroundColor: '#007bff',
@@ -807,31 +827,35 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 10,
     marginVertical: 5,
-    width: '100%',
-    zIndex: 1,
+    width: width * 0.95,
+    alignSelf: 'center',
+    zIndex: 0,
   },
   instructionsHeader: {
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 5,
+    color: '#495057'
   },
   instructionText: {
     fontSize: 14,
     marginBottom: 5,
+    color:'#495057',
   },
   locationButton: {
     // position: 'absolute',
     bottom: 10,
-    left: width / 2.6,
+    left: width - width / 5,
     height: 60,
     width: 60,
     backgroundColor: '#ffffff',
     borderRadius: 50,
     padding: 0,
     elevation: 5,
-    zIndex: 1,
+    zIndex: 0,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    alignSelf: 'auto',
   },
   bottomContainer: {
     // position: 'absolute',
@@ -842,7 +866,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 10,
     alignItems: 'center',
-    zIndex: -0,
+    // zIndex: -0,
   },
 });
 
