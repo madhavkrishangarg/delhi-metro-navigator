@@ -89,7 +89,7 @@ const HomeScreen = ({ navigation }) => {
     let minDistance = Infinity;
     let nearestStop = null;
 
-    stops_df.forEach(stop => {
+    Object.values(stops_df).forEach(stop => {
       const distance = getDistance(
         { latitude: coords[0], longitude: coords[1] },
         { latitude: stop.stop_lat, longitude: stop.stop_lon }
@@ -119,8 +119,8 @@ const HomeScreen = ({ navigation }) => {
         Alert.alert('Error', 'No route found');
         return;
       }
-
-      const startingStopData = stops_df.find(stop => stop.stop_id === routeData[0].from_stop);
+      // console.log(stops_df[routeData[0].from_stop]);
+      const startingStopData = stops_df[routeData[0].from_stop];
       setStartingStop(startingStopData);
 
       const shapesData = routeData.map(segment => {
@@ -130,8 +130,8 @@ const HomeScreen = ({ navigation }) => {
         const shapeId = routeObj.shape_id;
         const shapePoints = shapes.filter(shape => shape.shape_id === shapeId);
 
-        const fromStopCoords = stops_df.find(stop => stop.stop_id === segment.from_stop);
-        const toStopCoords = stops_df.find(stop => stop.stop_id === segment.to_stop);
+        const fromStopCoords = stops_df[segment.from_stop]
+        const toStopCoords = stops_df[segment.to_stop]
 
         if (!fromStopCoords || !toStopCoords) return [];
 
@@ -209,13 +209,13 @@ const HomeScreen = ({ navigation }) => {
     // console.log(route);
 
     const instructions = route.map((segment, index) => {
-      const stop_name = stops_df.find(stop => stop.stop_id === segment.from_stop).stop_name;
+      const stop_name = stops_df[segment.from_stop].stop_name;
       return `From ${stop_name} take ${segment.route_name.split('_')[0]} line towards ${segment.route_name.split(' to ')[1]}`;
     });
 
     // Add the arrival instruction for the last stop
     const lastStopSegment = route[route.length - 1];
-    const lastStopName = stops_df.find(stop => stop.stop_id === lastStopSegment.to_stop).stop_name;
+    const lastStopName = stops_df[lastStopSegment.to_stop].stop_name;
     instructions.push(`Arrive at stop ${lastStopName}`);
 
     // console.log(instructions);
@@ -459,7 +459,7 @@ const NavigationScreen = ({ navigation, route }) => {
         return;
       }
 
-      const startingStopData = stops_df.find(stop => stop.stop_id === routeData[0].from_stop);
+      const startingStopData = stops_df[routeData[0].from_stop];
       setStartingStop(startingStopData);
 
       const shapesData = routeData.map(segment => {
@@ -469,8 +469,8 @@ const NavigationScreen = ({ navigation, route }) => {
         const shapeId = routeObj.shape_id;
         const shapePoints = shapes.filter(shape => shape.shape_id === shapeId);
 
-        const fromStopCoords = stops_df.find(stop => stop.stop_id === segment.from_stop);
-        const toStopCoords = stops_df.find(stop => stop.stop_id === segment.to_stop);
+        const fromStopCoords = stops_df[segment.from_stop]
+        const toStopCoords = stops_d[segment.to_stop]
 
         if (!fromStopCoords || !toStopCoords) return [];
 
@@ -529,7 +529,7 @@ const NavigationScreen = ({ navigation, route }) => {
     let minDistance = Infinity;
     let nearestStop = null;
 
-    stops_df.forEach(stop => {
+    Object.values(stops_df).forEach(stop => {
       const distance = getDistance(
         { latitude: coords[0], longitude: coords[1] },
         { latitude: stop.stop_lat, longitude: stop.stop_lon }
@@ -579,13 +579,13 @@ const NavigationScreen = ({ navigation, route }) => {
     // console.log(route);
 
     const instructions = route.map((segment, index) => {
-      const stop_name = stops_df.find(stop => stop.stop_id === segment.from_stop).stop_name;
+      const stop_name = stops_df[segment.from_stop].stop_name;
       return `From ${stop_name} take ${segment.route_name.split('_')[0]} line towards ${segment.route_name.split(' to ')[1]}`;
     });
 
     // Add the arrival instruction for the last stop
     const lastStopSegment = route[route.length - 1];
-    const lastStopName = stops_df.find(stop => stop.stop_id === lastStopSegment.to_stop).stop_name;
+    const lastStopName = stops_df[lastStopSegment.to_stop].stop_name;
     instructions.push(`Arrive at stop ${lastStopName}`);
 
     // console.log(instructions);
