@@ -1,79 +1,126 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Delhi Metro Navigator
 
-# Getting Started
+Delhi Metro Navigator is a mobile application designed to provide efficient and user-friendly navigation through the Delhi Metro system. The app offers real-time, accurate directions, an interactive map interface, and optimized routing to enhance the commuting experience for both first-time users and frequent travelers.
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+## Features
 
-## Step 1: Start the Metro Server
+- **Route Planning**
+  - Input starting points and destinations using Google Places API autocomplete.
+  - Find the nearest metro stations to the source and destination.
+  - Utilize a heuristic-based (geodesic distance) A* algorithm to determine the optimal route, which is 20-30% faster than Dijkstra's algorithm.
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+- **Interactive Map Interface**
+  - Display the planned route using Google Maps SDK.
+  - Show metro stations, lines, and the user's current location.
+  - Support map panning and zooming for better navigation.
 
-To start Metro, run the following command from the _root_ of your React Native project:
+- **Turn-by-Turn Navigation**
+  - Provide step-by-step instructions for the entire journey.
+  - Include information on which metro lines to take and where to change.
+  - Update instructions in real-time based on the user's current location.
 
-```bash
-# using npm
-npm start
+- **Real-Time Location Tracking**
+  - Use device GPS to track the user's current location.
+  - Update the map view to center on the user's location when requested.
+  - Call the backend every 1000 milliseconds or on location change to update the route based on the user's current location.
 
-# OR using Yarn
-yarn start
-```
+- **Offline Data Processing**
+  - Backend sends the calculated route, including route-ids (metro lines) and transit stations, to the frontend.
+  - Frontend retrieves corresponding shape points and stops for the route and plots them on the map interface.
+  - Optimize data retrieval using efficient data structures, improving performance by 680% and 36450% in respective operations.
 
-## Step 2: Start your Application
+- **User-Friendly Interface**
+  - Clean and intuitive design for easy navigation.
+  - Responsive layout adapting to different screen sizes.
+  - Clear visual distinction between different metro lines using color coding.
 
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
+- **Backend Integration**
+  - Flask-based backend for handling routing requests.
+  - Efficient data structures and algorithms for quick route calculations.
+  - RESTful API for communication between frontend and backend.
+  - Implements Cross-Origin Resource Sharing (CORS) for frontend-backend communication.
+  - Backend caching for faster calculation of routes based on the shortest path.
 
-### For Android
+- **Performance Optimizations**
+  - Debounced API calls to reduce unnecessary backend requests.
+  - Efficient state management in React Native for smooth UI updates.
+  - Optimized rendering of map elements for better performance.
 
-```bash
-# using npm
-npm run android
+## Technologies Used
 
-# OR using Yarn
-yarn android
-```
+- **Frontend**: React Native, Google Maps SDK, Google Places API
+- **Backend**: Python, Flask, Pandas
+- **Data Processing**: Custom algorithms for route optimization and data structure efficiency
 
-### For iOS
+## Data Source
 
-```bash
-# using npm
-npm run ios
+- Raw data obtained from [Delhi Government Transport Department](https://otd.delhi.gov.in/)
+- Extensive preprocessing to extract and structure relevant transit system information
 
-# OR using Yarn
-yarn ios
-```
+## Backend - https://github.com/madhavkrishangarg/delhi-metro-navigator-backend
 
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
+## Installation
 
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
+### Prerequisites
 
-## Step 3: Modifying your App
+- Node.js
+- React Native CLI
+- Python
+- Flask
 
-Now that you have successfully run the app, let's modify it.
+### Steps
 
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/madhavkrishangarg/delhi-metro-navigator.git
+   cd delhi-metro-navigator
+   ```
 
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
+2. Install frontend dependencies:
+   ```sh
+   cd frontend
+   npm install
+   ```
 
-## Congratulations! :tada:
+3. Install backend dependencies:
+   ```sh
+   cd ../backend
+   pip install -r requirements.txt
+   ```
 
-You've successfully run and modified your React Native App. :partying_face:
+4. Start the backend server:
+   ```sh
+   python app.py
+   ```
 
-### Now what?
+5. Start the React Native app:
+   ```sh
+   cd ../frontend
+   npm start
+   ```
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
+## Usage
 
-# Troubleshooting
+- Open the app on your mobile device or emulator.
+- Enter the starting point and destination using the autocomplete feature.
+- Follow the real-time directions and interactive map to navigate through the Delhi Metro system.
 
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+## Contributing
 
-# Learn More
+We welcome contributions to enhance the Delhi Metro Navigator. Please follow these steps:
 
-To learn more about React Native, take a look at the following resources:
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature-branch`).
+3. Make your changes.
+4. Commit your changes (`git commit -m 'Add some feature'`).
+5. Push to the branch (`git push origin feature-branch`).
+6. Open a pull request.
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+## License
+
+This project is licensed under the MIT License.
+
+## Acknowledgements
+
+- Data provided by the [Delhi Government Transport Department](https://otd.delhi.gov.in/)
+- Google Maps SDK and Google Places API for providing map and location services.
