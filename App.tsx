@@ -315,7 +315,7 @@ const HomeScreen = ({ navigation }) => {
             setStartingPoint(`${lat},${lng}`);
           }}
           query={{
-            key: 'AIzaSyD3GEeam3dsxAwWfZxmDsQTkTvkcSpZ6eg',
+            key: 'PLACES_API_KEY',
             language: 'en',
             location: `${currentLocation.latitude},${currentLocation.longitude}`,
             radius: 10000,
@@ -348,7 +348,7 @@ const HomeScreen = ({ navigation }) => {
             setDestination(`${lat},${lng}`);
           }}
           query={{
-            key: 'AIzaSyD3GEeam3dsxAwWfZxmDsQTkTvkcSpZ6eg',
+            key: 'PLACES_API_KEY',
             language: 'en',
             location: `${currentLocation.latitude},${currentLocation.longitude}`,
             radius: 10000,
