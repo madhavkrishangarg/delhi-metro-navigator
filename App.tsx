@@ -127,10 +127,8 @@ const HomeScreen = ({ navigation }) => {
       setStartingStop(startingStopData);
 
       const shapesData = routeData.map(segment => {
-        const routeObj = routes.find(route => route.route_id === String(segment.route_id));
-        if (!routeObj) return [];
 
-        const shapeId = routeObj.shape_id;
+        const shapeId = routes[segment.route_id];
         const shapePoints = shapes.filter(shape => shape.shape_id === shapeId);
 
         const fromStopCoords = stops_df[segment.from_stop]
@@ -471,10 +469,8 @@ useEffect(() => {
       setStartingStop(startingStopData);
 
       const shapesData = routeData.map(segment => {
-        const routeObj = routes.find(route => route.route_id === String(segment.route_id));
-        if (!routeObj) return [];
+        const shapeId = routes[segment.route_id];
 
-        const shapeId = routeObj.shape_id;
         const shapePoints = shapes.filter(shape => shape.shape_id === shapeId);
 
         const fromStopCoords = stops_df[segment.from_stop]
