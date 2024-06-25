@@ -41,12 +41,13 @@ const HomeScreen = ({ navigation }) => {
       position => {
         const { latitude, longitude } = position.coords;
         setCurrentLocation({ latitude, longitude });
+        // console.log(`Current location: Latitude ${latitude}, Longitude ${longitude}`);
       },
       error => {
         Alert.alert('Error', 'Unable to get current location');
         console.error(error);
       },
-      { enableHighAccuracy: false, timeout: 20000, maximumAge: 1000 }
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
     );
   }, []);
 
@@ -54,17 +55,19 @@ const HomeScreen = ({ navigation }) => {
     const debouncedSetCurrentLocation = debounce((position) => {
       const { latitude, longitude } = position.coords;
       setCurrentLocation({ latitude, longitude });
-    }, 500);
+      // console.log(`Location changed: Latitude ${latitude}, Longitude ${longitude}`);
+    }, 100);
 
     const watchId = Geolocation.watchPosition(
       debouncedSetCurrentLocation,
       error => {
         console.error(error);
       },
-      { enableHighAccuracy: false, distanceFilter: 50 }
+      { enableHighAccuracy: true, distanceFilter: 10 }
     );
 
-    return () => Geolocation.clearWatch(watchId);
+    return () => {
+      Geolocation.clearWatch(watchId);}
   }, []);
 
   const findNearestShapePoint = (stopCoords, shapePoints) => {
@@ -124,7 +127,10 @@ const HomeScreen = ({ navigation }) => {
       setStartingStop(startingStopData);
 
       const shapesData = routeData.map(segment => {
-        const shapeId = routes[segment.route_id];
+        const routeObj = routes.find(route => route.route_id === String(segment.route_id));
+        if (!routeObj) return [];
+
+        const shapeId = routeObj.shape_id;
         const shapePoints = shapes.filter(shape => shape.shape_id === shapeId);
 
         const fromStopCoords = stops_df[segment.from_stop]
@@ -257,7 +263,7 @@ const HomeScreen = ({ navigation }) => {
             longitudeDelta: 0.0421,
           }}
           region={region}
-          // onRegionChangeComplete={debouncedSetRegion}
+        // onRegionChangeComplete={debouncedSetRegion}
         >
           {route.length > 0 && shapesToPlot.length > 0 && (
             <Marker
@@ -315,7 +321,7 @@ const HomeScreen = ({ navigation }) => {
             setStartingPoint(`${lat},${lng}`);
           }}
           query={{
-            key: 'PLACES_API_KEY',
+            key: 'API_KEY',
             language: 'en',
             location: `${currentLocation.latitude},${currentLocation.longitude}`,
             radius: 10000,
@@ -328,12 +334,12 @@ const HomeScreen = ({ navigation }) => {
             description: 'Current Location',
             geometry: { location: { lat: currentLocation.latitude, lng: currentLocation.longitude } }
           }]}
-          predefinedPlacesAlwaysVisible= {true}
+          predefinedPlacesAlwaysVisible={true}
           styles={{
             container: styles.placesAutocompleteContainer,
             textInputContainer: styles.placesAutocompleteTextInputContainer,
             textInput: styles.placesAutocompleteTextInput,
-            description: {color : 'black'},
+            description: { color: 'black' },
           }}
         />)}
 
@@ -348,7 +354,7 @@ const HomeScreen = ({ navigation }) => {
             setDestination(`${lat},${lng}`);
           }}
           query={{
-            key: 'PLACES_API_KEY',
+            key: 'API_KEY',
             language: 'en',
             location: `${currentLocation.latitude},${currentLocation.longitude}`,
             radius: 10000,
@@ -361,7 +367,7 @@ const HomeScreen = ({ navigation }) => {
             container: styles.placeAutocompleteContainerDestination,
             textInputContainer: styles.placesAutocompleteTextInputContainer,
             textInput: styles.placesAutocompleteTextInput,
-            description: {color : 'black'},
+            description: { color: 'black' },
           }}
         />)}
       </View>
@@ -411,34 +417,39 @@ const NavigationScreen = ({ navigation, route }) => {
   const [instructions, setInstructions] = useState([]);
   const [routeState, setRouteState] = useState([]);
 
-  useEffect(() => {
-    Geolocation.getCurrentPosition(
-      position => {
-        const { latitude, longitude } = position.coords;
-        setCurrentLocation({ latitude, longitude });
-      },
-      error => {
-        Alert.alert('Error', 'Unable to get current location');
-        console.error(error);
-      },
-      { enableHighAccuracy: false, timeout: 20000, maximumAge: 1000 }
-    );
+useEffect(() => {
+  const updateLocationAndRegion = (position) => {
+    const { latitude, longitude } = position.coords;
+    setCurrentLocation({ latitude, longitude });
+    setRegion({
+      latitude,
+      longitude,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    });
+  };
 
-    const watchId = Geolocation.watchPosition(
-      position => {
-        const { latitude, longitude } = position.coords;
-        setCurrentLocation({ latitude, longitude });
-      },
-      error => {
-        console.error(error);
-      },
-      { enableHighAccuracy: false, distanceFilter: 50, interval: 15000 }
-    );
+  Geolocation.getCurrentPosition(
+    updateLocationAndRegion,
+    error => {
+      Alert.alert('Error', 'Unable to get current location');
+      console.error(error);
+    },
+    { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+  );
 
-    return () => {
-      Geolocation.clearWatch(watchId);
-    };
-  }, []);
+  const watchId = Geolocation.watchPosition(
+    updateLocationAndRegion,
+    error => {
+      console.error(error);
+    },
+    { enableHighAccuracy: true, distanceFilter: 50, interval: 15000 }
+  );
+
+  return () => {
+    Geolocation.clearWatch(watchId);
+  };
+}, []);
 
   const updateRoute = useCallback(async () => {
     if (!currentLocation || !destination) return;
@@ -452,7 +463,7 @@ const NavigationScreen = ({ navigation, route }) => {
 
       const routeData = response.data;
       if (!routeData || routeData.length === 0 || !Array.isArray(routeData)) {
-        Alert.alert('Error', 'No route found');
+        Alert.alert('Alert', 'You have reached your destination!');
         return;
       }
 
@@ -460,7 +471,10 @@ const NavigationScreen = ({ navigation, route }) => {
       setStartingStop(startingStopData);
 
       const shapesData = routeData.map(segment => {
-        const shapeId = routes[segment.route_id];
+        const routeObj = routes.find(route => route.route_id === String(segment.route_id));
+        if (!routeObj) return [];
+
+        const shapeId = routeObj.shape_id;
         const shapePoints = shapes.filter(shape => shape.shape_id === shapeId);
 
         const fromStopCoords = stops_df[segment.from_stop]
@@ -604,7 +618,7 @@ const NavigationScreen = ({ navigation, route }) => {
 
   const groupedShapes = useMemo(() => groupShapesByShapeId(shapesToPlot), [shapesToPlot]);
 
-  const debouncedSetRegion = debounce(setRegion, 1000);
+  // const debouncedSetRegion = debounce(setRegion, 1000);
 
   // console.log(shapesToPlot);
   return (
@@ -834,7 +848,7 @@ const styles = StyleSheet.create({
   instructionText: {
     fontSize: 14,
     marginBottom: 5,
-    color:'#495057',
+    color: '#495057',
   },
   locationButton: {
     // position: 'absolute',
