@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Button, StyleSheet, Alert, Text, TouchableOpacity, Dimensions } from 'react-native';
-import Geolocation from '@react-native-community/geolocation';
+import Geolocation from 'react-native-geolocation-service';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import axios from 'axios';
 import stops_df from './stops_df';
@@ -13,6 +13,30 @@ import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplet
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { PermissionsAndroid } from 'react-native';
+
+async function requestLocationPermission() {
+  try {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      {
+        title: "Location Permission",
+        message: "This app needs access to your location.",
+        buttonNeutral: "Ask Me Later",
+        buttonNegative: "Cancel",
+        buttonPositive: "OK"
+      }
+    );
+    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+      console.log("You can use the location");
+    } else {
+      console.log("Location permission denied");
+    }
+  } catch (err) {
+    console.warn(err);
+  }
+}
+
 
 const Stack = createStackNavigator();
 
@@ -67,7 +91,8 @@ const HomeScreen = ({ navigation }) => {
     );
 
     return () => {
-      Geolocation.clearWatch(watchId);}
+      Geolocation.clearWatch(watchId);
+    }
   }, []);
 
   const findNearestShapePoint = (stopCoords, shapePoints) => {
@@ -415,39 +440,39 @@ const NavigationScreen = ({ navigation, route }) => {
   const [instructions, setInstructions] = useState([]);
   const [routeState, setRouteState] = useState([]);
 
-useEffect(() => {
-  const updateLocationAndRegion = (position) => {
-    const { latitude, longitude } = position.coords;
-    setCurrentLocation({ latitude, longitude });
-    setRegion({
-      latitude,
-      longitude,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
-    });
-  };
+  useEffect(() => {
+    const updateLocationAndRegion = (position) => {
+      const { latitude, longitude } = position.coords;
+      setCurrentLocation({ latitude, longitude });
+      setRegion({
+        latitude,
+        longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      });
+    };
 
-  Geolocation.getCurrentPosition(
-    updateLocationAndRegion,
-    error => {
-      Alert.alert('Error', 'Unable to get current location');
-      console.error(error);
-    },
-    { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-  );
+    Geolocation.getCurrentPosition(
+      updateLocationAndRegion,
+      error => {
+        Alert.alert('Error', 'Unable to get current location');
+        console.error(error);
+      },
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+    );
 
-  const watchId = Geolocation.watchPosition(
-    updateLocationAndRegion,
-    error => {
-      console.error(error);
-    },
-    { enableHighAccuracy: true, distanceFilter: 50, interval: 15000 }
-  );
+    const watchId = Geolocation.watchPosition(
+      updateLocationAndRegion,
+      error => {
+        console.error(error);
+      },
+      { enableHighAccuracy: true, distanceFilter: 50, interval: 15000 }
+    );
 
-  return () => {
-    Geolocation.clearWatch(watchId);
-  };
-}, []);
+    return () => {
+      Geolocation.clearWatch(watchId);
+    };
+  }, []);
 
   const updateRoute = useCallback(async () => {
     if (!currentLocation || !destination) return;
